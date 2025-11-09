@@ -84,7 +84,7 @@ class KeyOverlay(tk.Toplevel):
         self.strafe_label.grid(row=2, column=0, columnspan=3, pady=(8, 0), sticky="ew")
         self.strafe_label.lift(self.strafe_outline)
 
-        # extras (CTRL/SPACE/LMB/RMB/SCROLL)
+        # extras (CTRL/SPACE/LMB/RMB/SCROLL) ----maybe to use in grenade videos but I will be using custom buttons then cuz these are ugly
         self.extra_states: Dict[str, bool] = {k: False for k in ["CTRL", "SPACE", "LMB", "RMB", "SCROLL"]}
         self.extra_labels: Dict[str, tk.Label] = {}
         extra = tk.Frame(self.container, bg=self.transparent_col, bd=0, highlightthickness=0)
@@ -97,7 +97,7 @@ class KeyOverlay(tk.Toplevel):
             self.extra_labels[k] = lbl
         self._scroll_reset_id: Optional[str] = None
 
-        # WASD physical states (for CTRL combos)
+        # WASD physical states (for CTRL combos) --stupid ctrl bug with pyinput--if you read this in future make sure you add this bug issue and resolution in workspace (never run into this again)
         self.wasd_states: Dict[str, bool] = {k: False for k in ["W", "A", "S", "D"]}
 
         # score strip
@@ -120,7 +120,7 @@ class KeyOverlay(tk.Toplevel):
         # periodic UI refresh
         self.after(16, self._update_ui)
 
-    # ---- persistence / window ------------------------------------------
+    # window
 
     def _load_position(self) -> None:
         if self.config_path and os.path.exists(self.config_path):
@@ -153,7 +153,7 @@ class KeyOverlay(tk.Toplevel):
         self._save_position()
         super().destroy()
 
-    # ---- UI -------------------------------------------------------------
+    # UI
 
     def _update_ui(self) -> None:
         self.engine.refresh()
@@ -167,7 +167,8 @@ class KeyOverlay(tk.Toplevel):
         }
 
         # When CTRL is held, we want “physical truth”: show WASD strictly based on the
-        # current physical states captured from events — ignore engine’s colors for WASD.
+        # current physical states captured from events, ignore engine’s colors for WASD
+        # anyway ctrl would change velocity which would change the color feedback of accuracy
         if self.extra_states.get("CTRL", False):
             for k in ("W", "A", "S", "D"):
                 colours[k] = Engine.COLOUR_GREEN if self.wasd_states.get(k, False) else Engine.COLOUR_INACTIVE
@@ -186,15 +187,16 @@ class KeyOverlay(tk.Toplevel):
 
         self.after(16, self._update_ui)
 
+        # change colours in future if you come up with something new
     def show_strafe_info(self, text: str, kind: str) -> None:
         cmap = {
             "Perfect": "#35c759",
-            "Good": "#35c759",
+            "Good": "#61a39e",
             "Slow": "#35c759",
             "Overlap": "#ff9500",
             "Bad": "#ff3b30",
             "Micro": "#9b59b6",
-            "Bad rubberband": "#9b59b6",
+            "Bad rubberband": "#db4338",
         }
         if text:
             self.strafe_outline.configure(text=text, bg=self.msg_bg)
@@ -216,7 +218,7 @@ class KeyOverlay(tk.Toplevel):
         px, py = self.winfo_pointerx(), self.winfo_pointery()
         self.geometry(f"+{px - self._ox}+{py - self._oy}")
 
-    # extras --------------------------------------------------------------
+    # extras 
 
     def set_extra_key_state(self, key: str, pressed: bool) -> None:
         if key in self.extra_states:
@@ -257,7 +259,7 @@ class KeyOverlay(tk.Toplevel):
     def toggle_visibility(self) -> None:
         self.withdraw() if self.winfo_ismapped() else self.deiconify()
 
-    # score ---------------------------------------------------------------
+    # score 
 
     def add_score(self, category: str) -> None:
         if not category:
@@ -271,11 +273,11 @@ class KeyOverlay(tk.Toplevel):
         cmap = {
             "Perfect": "#35c759",
             "Good": "#35c759",
-            "Slow": "#35c759",
+            "Slow": "#3585c7",
             "Overlap": "#ff9500",
             "Bad": "#ff3b30",
             "Micro": "#9b59b6",
-            "Bad rubberband": "#9b59b6",
+            "Bad rubberband": "#ff3e30",
         }
         history = self.score_history[-10:]
         padded = [None] * (10 - len(history)) + history

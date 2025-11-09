@@ -28,8 +28,9 @@ def run_app() -> None:
     ko = KeyOverlay(root, engine, config_path=_config_path())
     hide_after: dict[str, Optional[str]] = {"id": None}
 
-    # --- robust key normalization ---------------------------------------
-    # Works reliably even when CTRL is held (char/name may be None/control codes).
+    
+    # Works reliably even when CTRL is held (char/name may be None/control codes)
+    # chatgpt suggested this, I have no clue but this didn't fix the bug 
     VK_TO_LETTER = {
         65: "a",  # A
         68: "d",  # D
@@ -75,20 +76,20 @@ def run_app() -> None:
                 return name
         return None
 
-    # keyboard ------------------------------------------------------------
+    # keyboard 
     def on_press(key):
         try:
             name = normalize_key(key)
 
-            # overlay shortcuts (scale & toggle) — support with and without modifiers
+            # overlay shortcuts (scale & toggle)
             if name == "plus":
                 ko.adjust_scale(0.1); return
             if name == "minus":
                 ko.adjust_scale(-0.1); return
 
-            # toggle visibility (F6) — keep existing logic using name fallback
+            # toggle visibility (F6) 
             if hasattr(key, "char") and getattr(key, "char") and getattr(key, "char").lower() == 'f':
-                pass  # do nothing; handled elsewhere if needed
+                pass  
             if getattr(key, "name", None) and str(getattr(key, "name")).lower() == "f6":
                 ko.toggle_visibility(); return
 
@@ -122,7 +123,7 @@ def run_app() -> None:
         except Exception:
             pass
 
-    # mouse ---------------------------------------------------------------
+    # mouse 
     def on_click(x, y, button, pressed):
         try:
             if button == mouse.Button.left:
@@ -145,10 +146,10 @@ def run_app() -> None:
                         elif category == "Micro":
                             msg, kind = f"Micro {ms} ms", "Micro"
                         else:
-                            msg, kind = (f"Bad {ms} ms" if ms < 120 else "Bad"), "Bad"
+                            msg, kind = (f"Micro Bad maybe accurate {ms} ms" if ms < 120 else "Bad"), "Bad"
                     else:
                         msg, kind = "", ""
-                    # Note: direct UI call from listener thread; acceptable short-term.
+                    
                     ko.show_strafe_info(msg, kind)
                 else:
                     ko.set_extra_key_state("LMB", False)
