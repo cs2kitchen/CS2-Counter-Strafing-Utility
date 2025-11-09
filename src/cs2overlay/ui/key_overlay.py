@@ -27,7 +27,7 @@ class DraggableFrame(tk.Frame):
 
 
 class KeyOverlay(tk.Toplevel):
-    """Top‑most transparent WASD + status label + extras + score strip."""
+    """Top-most transparent WASD + status label + extras + score strip."""
 
     def __init__(self, parent: tk.Tk, engine: Engine, *, config_path: Optional[str] = None) -> None:
         super().__init__(parent)
@@ -165,10 +165,13 @@ class KeyOverlay(tk.Toplevel):
             Engine.COLOUR_PURPLE: "#9b59b6",
             Engine.COLOUR_INACTIVE: "#333333",
         }
+
+        # When CTRL is held, we want “physical truth”: show WASD strictly based on the
+        # current physical states captured from events — ignore engine’s colors for WASD.
         if self.extra_states.get("CTRL", False):
-            for k in colours:
-                if self.wasd_states.get(k, False):
-                    colours[k] = Engine.COLOUR_GREEN
+            for k in ("W", "A", "S", "D"):
+                colours[k] = Engine.COLOUR_GREEN if self.wasd_states.get(k, False) else Engine.COLOUR_INACTIVE
+
         for k, lbl in self.labels.items():
             col = colours.get(k, Engine.COLOUR_INACTIVE)
             fg = "#666666" if col == Engine.COLOUR_INACTIVE else cmap.get(col, "#555555")
@@ -180,6 +183,7 @@ class KeyOverlay(tk.Toplevel):
             fg = "#ff3b30" if active else "#666666"
             border = "#ff3b30" if active else "#222222"
             lbl.configure(fg=fg, bg="#111111", highlightbackground=border, highlightcolor=border, highlightthickness=2)
+
         self.after(16, self._update_ui)
 
     def show_strafe_info(self, text: str, kind: str) -> None:
