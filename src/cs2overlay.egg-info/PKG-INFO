@@ -1,0 +1,7 @@
+Metadata-Version: 2.4
+Name: cs2overlay
+Version: 0.1.0
+Summary: CS2 strafe/shot timing overlay
+Author: Cook
+Requires-Python: >=3.9
+Requires-Dist: pynput>=1.7

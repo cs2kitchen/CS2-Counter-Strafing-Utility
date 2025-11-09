@@ -1,0 +1,17 @@
+﻿# Python build / cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual env
+.venv/
+env/
+venv/
+
+# Local config / runtime storage
+config.json
+
+# IDE / editor
+.vscode/
+.idea/

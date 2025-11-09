@@ -1,0 +1,2 @@
+[console_scripts]
+cs2-overlay = cs2overlay.app:main
