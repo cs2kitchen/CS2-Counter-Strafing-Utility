@@ -14,6 +14,7 @@ def _config_path() -> str:
 
 
 def run_app() -> None:
+    # Import inside to keep package import light for non-runtime contexts
     try:
         from pynput import keyboard, mouse  # type: ignore
     except ImportError:
@@ -28,56 +29,81 @@ def run_app() -> None:
     ko = KeyOverlay(root, engine, config_path=_config_path())
     hide_after: dict[str, Optional[str]] = {"id": None}
 
-    # keyboard ------------------------------------------------------------
+    # ---------------------------- helpers --------------------------------
+    def _normalized_key_name(k) -> Optional[str]:
+        """
+        Robustly derive a lowercased key name from pynput Key/KeyCode.
+        This fixes cases where CTRL (or other modifiers) suppress key.char.
+        """
+        try:
+            # Prefer explicit names for special keys (e.g., 'ctrl', 'space', 'f6', etc.)
+            if hasattr(k, "name") and k.name:
+                return str(k.name).lower()
+
+            # Regular character keys (when not suppressed by modifiers)
+            if hasattr(k, "char") and k.char:
+                return str(k.char).lower()
+
+            # Fallback: virtual-key code → chr → lower
+            if hasattr(k, "vk") and k.vk is not None:
+                # Windows letter VKs are 65–90; chr() + lower() gets us 'a'..'z'
+                try:
+                    return chr(int(k.vk)).lower()
+                except Exception:
+                    return None
+        except Exception:
+            return None
+        return None
+
+    def _is_wasd(name: Optional[str]) -> bool:
+        return name in ("w", "a", "s", "d")
+
+    # ---------------------------- keyboard --------------------------------
     def on_press(key):
         try:
-            name: Optional[str] = None
-            if hasattr(key, "name") and key.name:
-                name = key.name.lower()
-            elif hasattr(key, "char") and key.char:
-                name = key.char.lower()
-            elif hasattr(key, "vk") and key.vk is not None and key.vk in (ord("w"), ord("a"), ord("s"), ord("d")):
-                name = chr(key.vk)
+            name = _normalized_key_name(key)
 
+            # Overlay controls
             if name == "f6":
-                ko.toggle_visibility(); return
-            ch = getattr(key, "char", None)
-            if (ch == "+") or name in ("plus", "add", "equal"):
-                ko.adjust_scale(0.1); return
-            if (ch == "-") or name in ("minus", "subtract"):
-                ko.adjust_scale(-0.1); return
+                ko.toggle_visibility()
+                return
 
-            if name in ("w", "a", "s", "d"):
+            # Scale controls (main row + numpad variants resolve to same names)
+            ch = getattr(key, "char", None)
+            if (ch == "+") or name in ("+", "plus", "add", "equal"):
+                ko.adjust_scale(0.1)
+                return
+            if (ch == "-") or name in ("-", "minus", "subtract"):
+                ko.adjust_scale(-0.1)
+                return
+
+            # Movement + extras
+            if _is_wasd(name):
                 engine.press_key(name.upper())
                 ko.set_wasd_state(name.upper(), True)
-            elif name in ("ctrl", "ctrl_l", "ctrl_r"):
+            elif name in ("ctrl", "ctrl_l", "ctrl_r", "control", "control_l", "control_r"):
                 ko.set_extra_key_state("CTRL", True)
             elif name in ("space", " "):
                 ko.set_extra_key_state("SPACE", True)
         except Exception:
+            # Never let listener crash; silent by design for overlay stability
             pass
 
     def on_release(key):
         try:
-            name: Optional[str] = None
-            if hasattr(key, "name") and key.name:
-                name = key.name.lower()
-            elif hasattr(key, "char") and key.char:
-                name = key.char.lower()
-            elif hasattr(key, "vk") and key.vk is not None and key.vk in (ord("w"), ord("a"), ord("s"), ord("d")):
-                name = chr(key.vk)
+            name = _normalized_key_name(key)
 
-            if name in ("w", "a", "s", "d"):
+            if _is_wasd(name):
                 engine.release_key(name.upper())
                 ko.set_wasd_state(name.upper(), False)
-            elif name in ("ctrl", "ctrl_l", "ctrl_r"):
+            elif name in ("ctrl", "ctrl_l", "ctrl_r", "control", "control_l", "control_r"):
                 ko.set_extra_key_state("CTRL", False)
             elif name in ("space", " "):
                 ko.set_extra_key_state("SPACE", False)
         except Exception:
             pass
 
-    # mouse ---------------------------------------------------------------
+    # ------------------------------ mouse ---------------------------------
     def on_click(x, y, button, pressed):
         try:
             if button == mouse.Button.left:
@@ -106,14 +132,18 @@ def run_app() -> None:
                     ko.show_strafe_info(msg, kind)
                 else:
                     ko.set_extra_key_state("LMB", False)
+
                     def delayed_hide():
-                        ko.hide_strafe_info(); hide_after["id"] = None
+                        ko.hide_strafe_info()
+                        hide_after["id"] = None
+
                     if hide_after["id"] is not None:
                         try:
                             root.after_cancel(hide_after["id"])
                         except Exception:
                             pass
                     hide_after["id"] = root.after(1000, delayed_hide)
+
             elif button == mouse.Button.right:
                 ko.set_extra_key_state("RMB", bool(pressed))
         except Exception:
@@ -125,6 +155,7 @@ def run_app() -> None:
         except Exception:
             pass
 
+    # Listeners
     k_listener = keyboard.Listener(on_press=on_press, on_release=on_release)
     k_listener.daemon = True
     k_listener.start()
@@ -133,6 +164,7 @@ def run_app() -> None:
     m_listener.daemon = True
     m_listener.start()
 
+    # Teardown
     def on_close() -> None:
         try:
             k_listener.stop()
