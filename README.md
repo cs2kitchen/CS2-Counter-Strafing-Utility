@@ -9,9 +9,9 @@ It is stupid to design the buttons/UI yourself for a project like this.
 A lot of errors and bugs were fixed using AI.
 (Example: What error is this -> Describe it-> What is the fix? -> Fix it! -> Does it break something else? -> Can it affect other logic?)
 One of the core bugs with +ctrl led to non detection of keys during press.
-It was way more complicated than you might hope
-It is fixed
-Even Chatgpt failed to fix the bug (Use of AI is smart when you know what you are doing to save time)
+It was way more complicated than you might hope.
+It is fixed now.
+Even ChatGpt failed to fix the bug (Use of AI is smart when you know what you are doing to save time)
 
 
 ## Game Logic
@@ -23,8 +23,8 @@ The tool divides your movement into various categories (see youtube video for mo
     5. Bad
     6. Bad
     7. Bad
-    9. Microstrafe
-    10. Rubberband
+    8. Microstrafe
+    9. Rubberband
 
 Why 3 bad's ?
  1. Shooting when moving without opposite key press and original release is real bad
@@ -63,5 +63,12 @@ Window position is saved to `config.json` after first run.
 ## Installation
 Make sure you have python installed 
 Download the files to a directory
-Open a Terminal there
-Follow above listed Bash or Package solutions
+Open a Terminal there (powershell)
+```bash
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+```
+Follow Quick start guide after this step
+
+
+
+
