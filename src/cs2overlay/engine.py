@@ -7,7 +7,8 @@ from typing import Dict, Optional, Tuple
 class Engine:
     """Core timing/state machine for WASD and simple shot classification.
 
-    Times are milliseconds; we keep floats for precision and cast when needed.
+    Times are milliseconds; I kept floats for precision and cast when needed.
+    Remember this is accurate but not extremely precise.
     """
 
     # Tuning
@@ -58,7 +59,7 @@ class Engine:
         self.vert_opp_press_time: Optional[float] = None
         self.vert_both_down_start: Optional[float] = None
 
-    # ---- public API -----------------------------------------------------
+    # public API
 
     def press_key(self, key: str) -> None:
         if key not in self.key_down:
@@ -129,7 +130,7 @@ class Engine:
                 return ("Good", 0.0)  # < 70ms
             if self.horiz_current_key is not None:
                 held = now - self.horiz_press_time
-                return ("Micro", held) if held < self.ACCURATE_TAP_MS else ("Bad", held)
+                return ("Micro", held) if held < self.ACCURATE_TAP_MS else ("Maybe Accurate", held)
             if self.horiz_last_release_key is not None:
                 held = self.horiz_last_release_time - self.horiz_press_time
                 return ("Micro", held) if held < self.ACCURATE_TAP_MS else ("Bad", held)
@@ -166,7 +167,7 @@ class Engine:
             return v
         return h or v
 
-    # ---- internals ------------------------------------------------------
+    # internals 
 
     @staticmethod
     def _now() -> float:

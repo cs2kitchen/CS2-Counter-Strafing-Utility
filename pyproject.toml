@@ -5,8 +5,8 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "cs2overlay"
 version = "0.1.0"
-description = "CS2 strafe/shot timing overlay"
-authors = [{ name = "Cook" }]
+description = "CS2 Counter-Strafe Overlay"
+authors = [{ name = "CS2 Kitchen" }]
 requires-python = ">=3.9"
 dependencies = ["pynput>=1.7"]
 

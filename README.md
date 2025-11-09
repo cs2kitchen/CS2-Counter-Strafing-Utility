@@ -1,7 +1,13 @@
-# CS2 Strafe Overlay
+# CS2 Counter-Strafing overlay
 
-A lightweight, draggable WASD overlay with strafe/shot feedback for Counter‑Strike 2.
+A lightweight, draggable WASD overlay with strafe accuracy  feedback for Counter‑Strike 2.
 Global hooks via `pynput`, UI via Tkinter.
+
+## Disclosure
+There is use of AI in this project. 
+It is stupid to design the buttons yourself. A lot of errors and bugs were fixed using AI.
+You can find full history of prompts on this URL
+The url may or may not be updated at the time you read this
 
 ## Quick start
 
